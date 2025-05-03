@@ -1,7 +1,14 @@
 /* 
- * JUnit - Jank Unit Testing Framework for ANSI C89
- * ------------------------------------------------
- * Now with indented describe blocks!
+ * JUnit - the Jank Unit Testing Framework for ANSI C89
+ * ------------------------------------------------              
+ *  (_)  __ _  _ __  | |/ /| | | |_ __ (_) |_ 
+ *  | | / _` || '_ \ | ' / | | | | '_ \| | __|
+ *  | || (_| || | | || . \ | |_| | | | | | |_ 
+ *  / | \__,_)|_| |_||_|\_\ \___/|_| |_|_|\__|
+ * |__/                   
+ * J A N K  U N I T  '8 9
+ * ------------------------------------------------              
+ * Like grandpa always said, "Its not pretty but, but it compiles"
  */
 
 #ifndef JUNIT_H
@@ -18,16 +25,6 @@ static int __tests_failed = 0;
 static const char *__current_suite = NULL;
 static int __current_indent = 0;
 
-/* Optional hooks */
-static void junit_setup(void)    { /* no-op */ }
-static void junit_teardown(void) { /* no-op */ }
-#ifdef QUIET_UNUSED_HOOK_WARNINGS
-do {
-	junit_setup();
-	junit_teardown();
-} while(0);
-#endif
-
 /* Optional defs */
 #ifndef JDESC_INDENT
 #define JDESC_INDENT "   "
@@ -40,6 +37,12 @@ do {
 #ifndef JDESC_CLOSE
 #define JDESC_CLOSE " ===]"
 #endif /* JDESC_CLOSE */
+
+/* Optional hooks — override by defining JUNIT_CUSTOM_HOOKS before including this header */
+#ifndef JUNIT_CUSTOM_HOOKS
+static void junit_setup(void)    { /* no-op */ }
+static void junit_teardown(void) { /* no-op */ }
+#endif
 
 /* Helper: Print indent spaces */
 static void junit_print_indent(void) {
@@ -61,20 +64,27 @@ static void junit_print_indent(void) {
     } \
     void test_name(void)
 
-#define JDESCRIBE(name) \
+#define JSUITE(name) \
     do { \
         __current_suite = name; \
         junit_print_indent(); \
-        printf(JDESC_OPEN"%s"JDESC_CLOSE"\n", __current_suite); \
+        printf(JDESC_OPEN"%s" JDESC_CLOSE "\n", __current_suite); \
 		if (__current_indent == 0) junit_setup(); \
         ++__current_indent; \
     } while (0)
 
-#define JDESCRIBE_END() \
+#define JSUITE_END() \
     do { \
-        printf(JDESC_OPEN"%s"JDESC_CLOSE"\n", __current_suite); \
-        if (__current_indent > 0) --__current_indent; \
-		if (__current_indent == 0) junit_teardown(); \
+        printf(JDESC_OPEN"%s" JDESC_CLOSE "\n", __current_suite); \
+        __current_indent = 0; \
+		junit_teardown(); \
+    } while (0)
+
+#define JDESCRIBE(message) \
+    do { \
+        junit_print_indent(); \
+        printf("%s\n", message); \
+        ++__current_indent; \
     } while (0)
 
 #define JASSERT(expr) do { \
